@@ -1,17 +1,13 @@
 # Walko
 
-<hr/>
-
 A simple CLI application that calculates performance for a given wallet address, such as PnL (profit and loss), win rate ...
 
 ## Features
-<hr/>
 - Performance calculations for a single wallet address
 - Top performing wallets lookup to calculate results
 - Exporting records (as JSON or .csv)
 
 # Usage
-<hr/>
 
 Activate virtual enviroment:
 
@@ -37,7 +33,6 @@ Most of them are free, but are rate limited. You need to get an API key for Bird
 ```
 
 # Considerations
-<hr/>
 
 - The app is quite barebones. While it supports top address fetching, it is severely rate limited and may hang up.
 - Async functionality should be implemented.
