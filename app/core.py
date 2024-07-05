@@ -310,6 +310,8 @@ def process_transaction(transaction, wallet_address, minted_tokens):
 def calculate_performance(data, wallet_address):
     results = {}
     current_timestamp = int(time.time())
+    unique_tokens = 0
+    wins = 0
 
     for txn in tqdm(data, desc=f"Calculating performance for: {wallet_address}"):
         for stat in txn["stats"]:
@@ -339,6 +341,7 @@ def calculate_performance(data, wallet_address):
             # Append the processed data to the dictionary
             if token not in results:
                 results[token] = {"transactions": [], "total_value": 0}
+                unique_tokens += 1
 
             results[token]["transactions"].append({
                 "amount_difference": amount_difference,
@@ -347,6 +350,9 @@ def calculate_performance(data, wallet_address):
                 "timestamp": datetime.datetime.fromtimestamp(timestamp).isoformat()  # Convert to readable date
             })
             results[token]["total_value"] += value_usd
+
+    total_wallet_value = 0.0
+    total_wallet_value_current = 0.0
 
     # Calculate current prices and current values
     for token, info in results.items():
@@ -363,5 +369,16 @@ def calculate_performance(data, wallet_address):
             total_value_current += current_value_usd
 
         info["total_value_current"] = total_value_current
+        if info["total_value"] > 0:
+            wins += 1
+
+        total_wallet_value += info["total_value"]
+        total_wallet_value_current += total_value_current
+
+    winrate = wins / unique_tokens if unique_tokens > 0 else 0
+    results["unique_tokens"] = unique_tokens
+    results["winrate"] = winrate
+    results["value_at_transaction"] = total_wallet_value
+    results["current_value"] = total_wallet_value_current
 
     return results
