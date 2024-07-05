@@ -6,14 +6,13 @@ from tqdm import tqdm
 import core
 import helpers
 from logging_config import setup_logging
-
+import pandas as pd
 
 setup_logging()
 logger = logging.getLogger(__name__)
 
 
 def calculate_wallet_performance(wallet_address, save_type):
-
     current_date = datetime.now().strftime('%Y-%m-%d')
     processed_save_path = os.path.join(os.path.dirname(__file__), '', '../data', save_type, current_date, 'processed')
     results_save_path = os.path.join(os.path.dirname(__file__), '', '../data', save_type, current_date, 'results')
@@ -63,18 +62,26 @@ def calculate_wallet_performance(wallet_address, save_type):
 
     total_value = 0.0
     total_value_current = 0.0
+    df = pd.DataFrame(columns=["wallet", "pnl", "current_value", "win_rate", "unique_tokens_traded"])
 
     for token, info in results.items():
-        # print(f"Token: {token}")
-        # print(f"Total value at transaction time: {info['total_value']}")
-        # print(f"Total current value: {info['total_value_current']}")
+        if not isinstance(info, dict):
+            continue  # Skip entries that are not dictionaries
+
         total_value += info['total_value']
         total_value_current += info['total_value_current']
-        # for txn in info["transactions"]:
-        #     print(txn)
 
     print(f"PnL for wallet at transaction time: {format(total_value, '.2f')}$")
     print(f"PnL for wallet at current time: {format(total_value_current, '.2f')}$")
+
+    df["wallet"] = [wallet_address]
+    df["pnl"] = [format(total_value, '.4f')]
+    df["current_value"] = [format(total_value_current, '.4f')]
+    df["win_rate"] = [format(results.get("winrate", 0), '.2f')]
+    df["unique_tokens_traded"] = [results.get("unique_tokens", 0)]
+    csv_path = os.path.join(results_save_path, wallet_address+".csv")
+    df.to_csv(csv_path, index=False)
+    print(f"DataFrame saved as {wallet_address}.csv")
 
 
 def get_top_performers(token_address):
@@ -128,7 +135,6 @@ def main():
 
     except Exception as e:
         logger.error(f'An error occurred: {e}', exc_info=True)
-
 
 
 if __name__ == "__main__":
