@@ -21,14 +21,12 @@ def get_data_processing_choice_input():
             print("Selected option 2")
             return 2
         elif user_input == '0':
-            print("Exiting Walko...")
-            sys.exit()
+            exit_app()
         else:
             print("Invalid choice. Please select again.")
 
 
 def get_address(address_type):
-
     print("\n")
     print(f"Please enter a {address_type} address for a token you wish to analyze.")
 
@@ -36,8 +34,8 @@ def get_address(address_type):
 
     # Validate input and identify blockchain
     if not address:
-        print("No address provided. Exiting.")
-        sys.exit()
+        print("No address provided.")
+        exit_app()
 
     return address
 
@@ -81,3 +79,8 @@ def load_data_from_json(path, filename):
             return json.load(f)
     else:
         return None
+
+
+def exit_app():
+    print("Exiting Walko ...")
+    sys.exit()
