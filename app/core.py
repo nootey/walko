@@ -65,13 +65,14 @@ def get_interacting_wallets_sol(token_address):
 
 
 def get_transaction_signatures(address):
-    check_limit()
+
     current_function_name = inspect.currentframe().f_code.co_name
     all_signatures = []
     before = None
 
     try:
         while True:
+            check_limit()
             payload = {
                 "jsonrpc": "2.0",
                 "id": 1,
@@ -96,7 +97,7 @@ def get_transaction_signatures(address):
 
                 if len(data["result"]) < 1000:
                     break
-
+                print(data["result"][-1]["signature"])
                 before = data["result"][-1]["signature"]
             else:
                 return None, f"Error for function {current_function_name}: {response.status_code} - {response.reason}"
@@ -108,7 +109,7 @@ def get_transaction_signatures(address):
 
 
 def get_transaction_details(signature):
-    check_limit()
+
     payload = {
         "jsonrpc": "2.0",
         "id": 1,
@@ -119,19 +120,25 @@ def get_transaction_details(signature):
         ]
     }
     current_function_name = inspect.currentframe().f_code.co_name
+    max_retries = 3
 
-    try:
+    for attempt in range(max_retries):
+        check_limit()
+        try:
+            response = requests.post(public_api_url, headers=headers, data=json.dumps(payload))
 
-        response = requests.post(public_api_url, headers=headers, data=json.dumps(payload))
-
-        if response.status_code == 200:
-            data = response.json()
-            return data.get("result"), None
-
-        else:
-            return None, f"Error for function {current_function_name}: {response.status_code} - {response.reason}"
-    except requests.exceptions.RequestException as e:
-        return None, f"Request error for function {current_function_name}: {e}"
+            if response.status_code == 200:
+                data = response.json()
+                return data.get("result"), None
+            elif response.status_code == 429:
+                if attempt < max_retries - 1:
+                    check_limit()
+                else:
+                    return None, f"Error for function {current_function_name}: {response.status_code} - {response.reason} after {max_retries} attempts"
+            else:
+                return None, f"Error for function {current_function_name}: {response.status_code} - {response.reason}"
+        except requests.exceptions.RequestException as e:
+            return None, f"Request error for function {current_function_name}: {e}"
 
 
 def get_token_price(token_address, timestamp):
