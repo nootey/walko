@@ -2,12 +2,11 @@ import logging
 import os
 import sys
 from datetime import datetime
-
 from tqdm import tqdm
-
 import core
 import helpers
 from logging_config import setup_logging
+
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -32,6 +31,9 @@ def calculate_wallet_performance(wallet_address, save_type):
         if err is not None:
             print(err)
             raise Exception(err)
+        if len(signatures) < 3:
+            print(f"Account must have at least 3 valid signatures ... Count for this account: {len(signatures)}")
+            helpers.exit_app()
 
         minted_tokens = []
         for signature in tqdm(signatures, desc=f"Processing transaction signatures for address: {wallet_address}"):
@@ -100,6 +102,7 @@ def get_top_performers(token_address):
         print(f"Error fetching wallets: {err}")
         sys.exit()
 
+    print("Done")
     return wallets
 
 
@@ -117,14 +120,15 @@ def main():
         elif user_choice == 2:
             token_address = helpers.get_address("tokan")
             wallets = get_top_performers(token_address)
-            for wallet in wallets:
+            for wallet in tqdm(wallets, desc="Calculating performance for top wallets"):
                 calculate_wallet_performance(wallet["address"], "multi")
+                print(f"{wallet['address']} done")
 
-        print("Exiting Walko ...")
-        sys.exit()
+        helpers.exit_app()
 
     except Exception as e:
         logger.error(f'An error occurred: {e}', exc_info=True)
+
 
 
 if __name__ == "__main__":
