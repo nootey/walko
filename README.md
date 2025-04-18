@@ -28,7 +28,7 @@ Most of them are free, but are rate limited. You need to get an API key for Bird
 > Name it: birdeye.json
 ```json
 {
-  "api_key": "a405dfeba27945c8b7590e3655c3c0dc"
+  "api_key": "KEY"
 }
 ```
 
